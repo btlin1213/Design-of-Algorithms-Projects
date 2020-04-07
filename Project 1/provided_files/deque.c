@@ -237,6 +237,11 @@ void split_deque(Deque *deque, int k) {
   while (deque_size(smaller_deque) > 0) {
     deque_insert(deque, deque_pop(smaller_deque));
   }
+
+  // free temporary deques
+  free_deque(smaller_deque);
+  free_deque(larger_deque);
+
 }
 
 // TODO: Add any other functions you might need for your Deque module
