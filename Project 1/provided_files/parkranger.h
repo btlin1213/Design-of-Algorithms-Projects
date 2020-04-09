@@ -56,4 +56,29 @@ bool is_single_run_possible();
 
 // TODO: Add any additional functions or types required to solve this problem.
 
+// the nodes that make up linked lists
+typedef struct adj_list_node Node;
+// the linked lists that make up the graph
+typedef struct adj_list List;
+// the graph represented by arrays of linked lists 
+typedef struct graph Graph;
+
+struct adj_list_node {
+    int dest;
+    Node* next;
+};
+
+struct adj_list {
+    Node* head;
+};
+
+struct graph {
+    int total_v;
+    List* array;
+};
+
+Graph *create_graph(int total_v);
+void add_edge(Graph* graph, int from, int to);
+void print_graph(Graph* grpah);
+
 #endif

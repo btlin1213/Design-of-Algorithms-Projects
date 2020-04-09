@@ -3,7 +3,7 @@
  *
  * created for COMP20007 Design of Algorithms 2020
  * template by Tobias Edwards <tobias.edwards@unimelb.edu.au>
- * implementation by <Insert Name Here>
+ * implementation by Dian Lin
  */
 
 // You must not change any of the code already provided in this file, such as
