@@ -62,6 +62,7 @@ bool is_single_run_possible() {
   int v, e;
   int from, to;
   scanf("%d %d", &v, &e);
+  
   // create the graph
   Graph *graph = create_graph(v);
 
@@ -70,6 +71,7 @@ bool is_single_run_possible() {
     scanf("%d %d", &from, &to);
     add_edge(graph, from, to);
   }
+  // printf("\nfrom is %d and to is %d\n", from, to);
 
   // print the graph
   print_graph(graph);
@@ -99,6 +101,7 @@ Graph *create_graph(int total_v) {
 void add_edge(Graph* graph, int from, int to) {
   Node* new_node = malloc(sizeof(Node));
   new_node->dest = to;
+  new_node->next = NULL;
 
   // if empty list
   if (graph->array[from].head == NULL) {
@@ -122,6 +125,7 @@ void print_graph(Graph* graph) {
   for (int i=0; i<(graph->total_v+1); i++) {
     Node* curr = graph->array[i].head;
     printf("%d :", i);
+
     while (curr) {
       printf(" -> %d", curr->dest);
       curr = curr->next;
