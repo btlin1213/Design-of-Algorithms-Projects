@@ -75,19 +75,28 @@ bool is_single_run_possible() {
   // printf("\nfrom is %d and to is %d\n", from, to);
 
   // print the graph
-  print_graph(graph);
+  // print_graph(graph);
 
   // topo-sort 
   Deque* topo_deque = top_sort(graph, v);
 
   // print stack as is
-  print_deque(topo_deque);
+  // print_deque(topo_deque);
+
   // print topo-sorted order (reversed stack)
   iterative_reverse(topo_deque);
-  print_deque(topo_deque);
+  // print_deque(topo_deque);
   
+  // check if every node in topo_deque has direct edge
+  Node* curr = topo_deque->top;
+  while (curr->next != NULL) {
+    if (check_stack(curr->next->data, &graph->array[curr->data]) == 0) {
+      return false;
+    }
+    curr = curr->next; 
+  }
+  return true;
   // exit_with_error("is_single_run_possible not implemented");
-  return false;
 }
 
 // TODO: Add any additional functions or types required to solve this problem.
@@ -143,6 +152,7 @@ Deque* top_sort(Graph* graph, int total_v) {
     visited[i] = 0;
   }
 
+  // top_sort_recursive(0, stack, visited, graph);
   for (int i=0; i<(total_v+1); i++) {
     if (visited[i] == 0) {
       top_sort_recursive(i, stack, visited, graph);
@@ -152,20 +162,43 @@ Deque* top_sort(Graph* graph, int total_v) {
 }
 
 void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph) {
+  // mark current node as visited
   visited[node_id] = 1;
-  
-  if (graph->array[node_id].top != NULL) {
-    // iterate through adjacent list of current node
-    Node* curr = graph->array[node_id].top; 
-    while (curr->next != NULL) {
-      if (visited[curr->next->data] == 0) {
-        top_sort_recursive(curr->next->data, stack, visited, graph);
+
+  // case 1: empty adj list
+  if (graph->array[node_id].top == NULL) {
+    // push it to the stack
+    deque_insert(stack, node_id);
+  }
+
+  // case 2: there are adjacent nodes
+  else {
+    Node* curr = graph->array[node_id].top;
+    // check if all adjacent nodes are in stack, if so, push current node
+    while (curr != NULL) {
+      if (check_stack(curr->data, stack) == 0) {
+        top_sort_recursive(curr->data, stack, visited, graph);
       }
       curr = curr->next;
     }
+    // all adjacent nodes are in stack
+    deque_insert(stack, node_id);
   }
-  // empty adjacent list
-  deque_insert(stack, node_id);
-   
+}
+
+
+int check_stack(int node, Deque* stack) {
+  if (stack->top == NULL) {
+    return 0;
+  }
+  Node* curr = stack->top; 
+  while (curr != NULL) {
+    if (curr->data == node) {
+      // yes in stack
+      return 1;
+    }
+    curr = curr->next;
+  }
+  return 0;
 }
 
