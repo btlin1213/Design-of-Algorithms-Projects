@@ -55,6 +55,7 @@
 //  - Return `true` or `false` (included in the stdbool.h library)
 //
 // For full marks your algorithm must run in O(n + m) time.
+
 bool is_single_run_possible() {
 
   // read from stdin
@@ -72,20 +73,14 @@ bool is_single_run_possible() {
     scanf("%d %d", &from, &to);
     add_edge(graph, from, to);
   }
-  // printf("\nfrom is %d and to is %d\n", from, to);
 
-  // print the graph
+  // print the graph if needed
   // print_graph(graph);
 
   // topo-sort 
   Deque* topo_deque = top_sort(graph, v);
-
-  // print stack as is
-  // print_deque(topo_deque);
-
-  // print topo-sorted order (reversed stack)
+  // reverse stack for topo-sorted order 
   iterative_reverse(topo_deque);
-  // print_deque(topo_deque);
   
   // check if every node in topo_deque has direct edge
   Node* curr = topo_deque->top;
@@ -99,9 +94,8 @@ bool is_single_run_possible() {
   // exit_with_error("is_single_run_possible not implemented");
 }
 
-// TODO: Add any additional functions or types required to solve this problem.
-
-// create graph of total_v number of vertices (0 is mountain, 1- is trees)
+// function to create graph of total_v number of vertices 
+// (0 is mountain, 1- is trees)
 Graph *create_graph(int total_v) {
   Graph* graph = malloc(sizeof(Graph));
   graph->total_v = total_v; // total_v = 4
@@ -116,16 +110,18 @@ Graph *create_graph(int total_v) {
   return graph;
 }
 
-// add edge to graph
+// function to add an edge to given graph
 void add_edge(Graph* graph, int from, int to) {
   deque_insert(&graph->array[from], to);
 }
 
-// print graph (represented by adjacency lists)
+// function to print graph (represented by adjacency lists)
 void print_graph(Graph* graph) {
   for (int i=0; i<(graph->total_v+1); i++) {
     printf("%d :", i);
     print_deque(&graph->array[i]);
+
+  // another way to print the graph (more clearly with arrows)
   //   Node* curr = graph->array[i].top;
   //   printf("%d :", i);
 
@@ -134,11 +130,12 @@ void print_graph(Graph* graph) {
   //     curr = curr->next;
   //   }
   //   printf("\n");
+
   }
   printf("\n");
 }
 
-// topological sort 
+// starter function for topological sort 
 Deque* top_sort(Graph* graph, int total_v) {
   // initialise stack
   Deque* stack = new_deque();
@@ -152,7 +149,6 @@ Deque* top_sort(Graph* graph, int total_v) {
     visited[i] = 0;
   }
 
-  // top_sort_recursive(0, stack, visited, graph);
   for (int i=0; i<(total_v+1); i++) {
     if (visited[i] == 0) {
       top_sort_recursive(i, stack, visited, graph);
@@ -161,11 +157,12 @@ Deque* top_sort(Graph* graph, int total_v) {
   return stack;
 }
 
+// recursive helper function for topological sort 
 void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph) {
   // mark current node as visited
   visited[node_id] = 1;
 
-  // case 1: empty adj list
+  // case 1: empty adjacency list (no adjacent nodes)
   if (graph->array[node_id].top == NULL) {
     // push it to the stack
     deque_insert(stack, node_id);
@@ -186,7 +183,7 @@ void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph) {
   }
 }
 
-
+// function to check whether given node is in given deque
 int check_stack(int node, Deque* stack) {
   if (stack->top == NULL) {
     return 0;
