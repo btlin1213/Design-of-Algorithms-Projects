@@ -100,49 +100,33 @@ Graph *create_graph(int total_v) {
   // malloc space for the array to allow total_v number of linked lists
   graph->array = malloc((total_v+1) * sizeof(Deque));
 
-  // initialise head of each linked list to NULL
+  // initialise top of each linked list to NULL
   for (int i=0; i<(total_v+1); i++) {
-    graph->array[i].head = NULL;
+    graph->array[i] = *new_deque();
   }
   return graph;
 }
 
 // add edge to graph
 void add_edge(Graph* graph, int from, int to) {
-  ParkNode* new_node = malloc(sizeof(ParkNode));
-  new_node->dest = to;
-  new_node->next = NULL;
-  
-
-  // if empty list
-  if (graph->array[from].head == NULL) {
-    graph->array[from].head = new_node;
-  } else {
-    // add the ParkNode at end to ensure it's sorted in ascending 
-    ParkNode* curr = malloc(sizeof(ParkNode));
-    curr = graph->array[from].head;
-    while (curr->next) {
-      // curr is at last ParkNode by the end of while-loop
-      curr = curr->next;
-    }
-    // insert new ParkNode after curr
-    curr->next = new_node;
-    new_node->next = NULL;
-  }
+  deque_insert(&graph->array[from], to);
 }
 
 // print graph (represented by adjacency lists)
 void print_graph(Graph* graph) {
   for (int i=0; i<(graph->total_v+1); i++) {
-    ParkNode* curr = graph->array[i].head;
     printf("%d :", i);
+    print_deque(&graph->array[i]);
+  //   Node* curr = graph->array[i].top;
+  //   printf("%d :", i);
 
-    while (curr) {
-      printf(" -> %d", curr->dest);
-      curr = curr->next;
-    }
-    printf("\n");
+  //   while (curr) {
+  //     printf(" -> %d", curr->next);
+  //     curr = curr->next;
+  //   }
+  //   printf("\n");
   }
+  printf("\n");
 }
 
 // topological sort 
@@ -161,21 +145,21 @@ Deque* top_sort(Graph* graph, int total_v) {
 
   for (int i=0; i<(total_v+1); i++) {
     if (visited[i] == 0) {
-      top_sort_recursive(i, i, stack, visited, graph);
+      top_sort_recursive(i, stack, visited, graph);
     }
   }
   return stack;
 }
 
-void top_sort_recursive(int node_id, int prev_node, Deque* stack, int* visited, Graph* graph) {
+void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph) {
   visited[node_id] = 1;
   
-  if (graph->array[node_id].head != NULL) {
+  if (graph->array[node_id].top != NULL) {
     // iterate through adjacent list of current node
-    ParkNode* curr = graph->array[node_id].head; 
+    Node* curr = graph->array[node_id].top; 
     while (curr->next != NULL) {
-      if (visited[curr->dest] == 0) {
-        top_sort_recursive(curr->dest, node_id, stack, visited, graph);
+      if (visited[curr->next->data] == 0) {
+        top_sort_recursive(curr->next->data, stack, visited, graph);
       }
       curr = curr->next;
     }

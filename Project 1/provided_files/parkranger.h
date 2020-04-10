@@ -57,31 +57,26 @@ bool is_single_run_possible();
 
 // TODO: Add any additional functions or types required to solve this problem.
 
-// the nodes that make up linked lists
-typedef struct adj_list_node ParkNode;
+
 // the linked lists that make up the graph
 typedef struct adj_list List;
 // the graph represented by arrays of linked lists 
 typedef struct graph Graph;
 
-struct adj_list_node {
-    int dest;
-    ParkNode* next;
-};
 
 struct adj_list {
-    ParkNode* head;
+    Node* head;
 };
 
 struct graph {
     int total_v;
-    List* array;
+    Deque* array;
 };
 
 Graph *create_graph(int total_v);
 void add_edge(Graph* graph, int from, int to);
 void print_graph(Graph* graph);
 Deque* top_sort(Graph* graph, int total_v);
-void top_sort_recursive(int node_id, int prev_node, Deque* stack, int* visited, Graph* graph);
+void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph);
 
 #endif
