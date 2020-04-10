@@ -192,7 +192,6 @@ void iterative_reverse(Deque *deque) {
   * because curr has already reached NULL
   * so temp->prev is the last node */
   deque->top = temp->prev;
-  printf("%d\n", deque->top->data);
 }
 
 // Reverse the Deque using a recursive approach
