@@ -198,4 +198,3 @@ int check_stack(int node, Deque* stack) {
   }
   return 0;
 }
-
