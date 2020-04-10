@@ -58,15 +58,9 @@ bool is_single_run_possible();
 // TODO: Add any additional functions or types required to solve this problem.
 
 
-// the linked lists that make up the graph
-typedef struct adj_list List;
 // the graph represented by arrays of linked lists 
 typedef struct graph Graph;
 
-
-struct adj_list {
-    Node* head;
-};
 
 struct graph {
     int total_v;

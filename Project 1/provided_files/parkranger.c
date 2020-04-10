@@ -65,8 +65,8 @@ bool is_single_run_possible() {
   int from, to;
   scanf("%d %d", &v, &e);
 
-  // create the graph
-  Graph *graph = create_graph(v);
+  // create the graph (with extra space for mountain)
+  Graph *graph = create_graph(v+1);
 
   // read in subsequent lines and add edges
   for (int i=0; i<e; i++) {
@@ -98,13 +98,13 @@ bool is_single_run_possible() {
 // (0 is mountain, 1- is trees)
 Graph *create_graph(int total_v) {
   Graph* graph = malloc(sizeof(Graph));
-  graph->total_v = total_v; // total_v = 4
+  graph->total_v = total_v; // total_v = 5
 
   // malloc space for the array to allow total_v number of linked lists
-  graph->array = malloc((total_v+1) * sizeof(Deque));
+  graph->array = malloc((total_v) * sizeof(Deque));
 
   // initialise top of each linked list to NULL
-  for (int i=0; i<(total_v+1); i++) {
+  for (int i=0; i<(total_v); i++) {
     graph->array[i] = *new_deque();
   }
   return graph;
