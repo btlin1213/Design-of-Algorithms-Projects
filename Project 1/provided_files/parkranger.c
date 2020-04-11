@@ -74,11 +74,8 @@ bool is_single_run_possible() {
     add_edge(graph, from, to);
   }
 
-  // print the graph if needed
-  // print_graph(graph);
-
-  // topo-sort 
-  Deque* topo_deque = top_sort(graph, v);
+  // topo-sort (with extra space for mountain)
+  Deque* topo_deque = top_sort(graph, v+1);
   // reverse stack for topo-sorted order 
   iterative_reverse(topo_deque);
   
@@ -91,7 +88,11 @@ bool is_single_run_possible() {
     curr = curr->next; 
   }
   return true;
-  // exit_with_error("is_single_run_possible not implemented");
+
+  // clean-up by freeing memories associated with each structure
+  free_node(curr);
+  free_graph(graph, v+1);
+  free_deque(topo_deque);
 }
 
 // function to create graph of total_v number of vertices 
@@ -103,7 +104,7 @@ Graph *create_graph(int total_v) {
   // malloc space for the array to allow total_v number of linked lists
   graph->array = malloc((total_v) * sizeof(Deque));
 
-  // initialise top of each linked list to NULL
+  // initialise each deque (adjacency list) in the graph 
   for (int i=0; i<(total_v); i++) {
     graph->array[i] = *new_deque();
   }
@@ -115,26 +116,6 @@ void add_edge(Graph* graph, int from, int to) {
   deque_insert(&graph->array[from], to);
 }
 
-// function to print graph (represented by adjacency lists)
-void print_graph(Graph* graph) {
-  for (int i=0; i<(graph->total_v+1); i++) {
-    printf("%d :", i);
-    print_deque(&graph->array[i]);
-
-  // another way to print the graph (more clearly with arrows)
-  //   Node* curr = graph->array[i].top;
-  //   printf("%d :", i);
-
-  //   while (curr) {
-  //     printf(" -> %d", curr->next);
-  //     curr = curr->next;
-  //   }
-  //   printf("\n");
-
-  }
-  printf("\n");
-}
-
 // starter function for topological sort 
 Deque* top_sort(Graph* graph, int total_v) {
   // initialise stack
@@ -142,14 +123,14 @@ Deque* top_sort(Graph* graph, int total_v) {
 
   // dynamically initialise array 
   int* visited;
-  visited = (int*) malloc((total_v+1) * sizeof(int));
+  visited = (int*) malloc((total_v) * sizeof(int));
   assert(visited);
   // mark all nodes in visited to false
-  for (int i=0; i<(total_v+1); i++) {
+  for (int i=0; i<(total_v); i++) {
     visited[i] = 0;
   }
 
-  for (int i=0; i<(total_v+1); i++) {
+  for (int i=0; i<(total_v); i++) {
     if (visited[i] == 0) {
       top_sort_recursive(i, stack, visited, graph);
     }
@@ -197,4 +178,13 @@ int check_stack(int node, Deque* stack) {
     curr = curr->next;
   }
   return 0;
+}
+
+// function to free memory associated with graph structure
+void free_graph(Graph* graph, int total_v) {
+  for (int i=0; i<(total_v); i++) {
+    free_deque(&graph->array[i]);
+  }
+  // free the graph struct itself
+  free(graph);
 }

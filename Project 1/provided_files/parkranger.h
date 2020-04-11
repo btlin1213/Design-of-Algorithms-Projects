@@ -73,4 +73,5 @@ void print_graph(Graph* graph);
 Deque* top_sort(Graph* graph, int total_v);
 void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph);
 int check_stack(int node, Deque* stack);
+void free_graph(Graph* graph, int total_v);
 #endif
