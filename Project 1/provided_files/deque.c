@@ -180,7 +180,6 @@ void iterative_reverse(Deque *deque) {
   Node *curr = deque->top;
   // assign bottom pointer to the top node 
   deque->bottom = curr;
-  // printf("%d\n", deque->bottom->data);
   while (curr != NULL) {
     temp = curr->prev;
     curr->prev = curr->next;
@@ -192,6 +191,9 @@ void iterative_reverse(Deque *deque) {
   * because curr has already reached NULL
   * so temp->prev is the last node */
   deque->top = temp->prev;
+  
+  // clean up
+  free_node(curr);
 }
 
 // Reverse the Deque using a recursive approach
@@ -253,6 +255,8 @@ Node *rec_reverse(Node *head) {
   // reverse complete
   if (head->prev == NULL) {
     return head;
+    // clean up
+    free_node(temp);
   }
 
   return rec_reverse(head->prev);

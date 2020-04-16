@@ -69,7 +69,8 @@ bool is_single_run_possible() {
   Graph *graph = create_graph(v+1);
 
   // read in subsequent lines and add edges
-  for (int i=0; i<e; i++) {
+  int i=0;
+  for (i=0; i<e; i++) {
     scanf("%d %d", &from, &to);
     add_edge(graph, from, to);
   }
@@ -105,7 +106,8 @@ Graph *create_graph(int total_v) {
   graph->array = malloc((total_v) * sizeof(Deque));
 
   // initialise each deque (adjacency list) in the graph 
-  for (int i=0; i<(total_v); i++) {
+  int i=0;
+  for (i=0; i<(total_v); i++) {
     graph->array[i] = *new_deque();
   }
   return graph;
@@ -125,14 +127,17 @@ Deque* top_sort(Graph* graph, int total_v) {
   int* visited;
   visited = (int*) malloc((total_v) * sizeof(int));
   assert(visited);
+
   // mark all nodes in visited to false
-  for (int i=0; i<(total_v); i++) {
+  int i=0;
+  for (i=0; i<(total_v); i++) {
     visited[i] = 0;
   }
 
-  for (int i=0; i<(total_v); i++) {
-    if (visited[i] == 0) {
-      top_sort_recursive(i, stack, visited, graph);
+  int j=0;
+  for (j=0; j<(total_v); j++) {
+    if (visited[j] == 0) {
+      top_sort_recursive(j, stack, visited, graph);
     }
   }
   return stack;
@@ -182,7 +187,8 @@ int check_stack(int node, Deque* stack) {
 
 // function to free memory associated with graph structure
 void free_graph(Graph* graph, int total_v) {
-  for (int i=0; i<(total_v); i++) {
+  int i=0;
+  for (i=0; i<(total_v); i++) {
     free_deque(&graph->array[i]);
   }
   // free the graph struct itself
