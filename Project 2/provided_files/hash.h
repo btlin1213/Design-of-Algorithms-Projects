@@ -3,7 +3,7 @@
  *
  * created for COMP20007 Design of Algorithms 2020
  * template by Tobias Edwards <tobias.edwards@unimelb.edu.au>
- * implementation by <Insert Name Here>
+ * implementation by Dian Lin
  */
 
 #ifndef HASH_H
@@ -17,6 +17,10 @@
 //   str_N
 // And outputs (to stdout) the hash values of the N strings 1 per line.
 void problem_1_a();
+int hash(char* string, int m);
+int chr(char character);
+int co_prime(int m, int k);
+char** resize_hash_table(char** hash_table, int m, int k);
 
 // Implements a solution to Problem 1 (b), which reads in from stdin:
 //   N M K
@@ -41,5 +45,7 @@ void problem_1_a();
 //   (M-2): str_q
 //   (M-1):
 void problem_1_b();
-
+int hash_table_full(char** hashtable, int m);
+int insert(char** hash_table, char* string, int hash_value, int m, int k);
+void free_hash_table(char** hash_table, int m);
 #endif
