@@ -47,10 +47,10 @@ void problem_1_a() {
     hash_values[j] = hash_value;
   }
 
-  // 4. print the hash values to stdout
-  for (int k=0; k<n; k++) {
-    printf("%d\n", hash_values[k]);
-  }
+  // // 4. print the hash values to stdout
+  // for (int k=0; k<n; k++) {
+  //   printf("%d\n", hash_values[k]);
+  // }
 }
 
 int hash(char* string, int m) {
@@ -112,8 +112,9 @@ void problem_1_b() {
   // 1. read in the N, M and K values
   int n = 0, m = 0, k = 0;
   scanf("%d %d %d", &n, &m, &k);
+  int* m_ptr = &m;
   // 2. create initial hash table of size M
-  char **hash_table = (char**)malloc(m*sizeof(char*));
+  char** hash_table = (char**)malloc(m*sizeof(*hash_table));
   assert(hash_table);
   for (int i=0; i<m; i++) {
     hash_table[i] = (char*)malloc(MAX_STRING_LENGTH*sizeof(char));
@@ -127,19 +128,21 @@ void problem_1_b() {
     scanf("%s\n", string);
     int hash_value = hash(string, m);
     // 4. insert into hashtable 
-    hash_table = insert(hash_table, string, hash_value, m, k);
+    hash_table = insert(hash_table, string, hash_value, m, k, m_ptr);
   }
-
-  // printf("table size: %lu\n", sizeof(hash_table)/sizeof(char*));
-  
   // 5. print to stdout
-  for (int i=0; i<12; i++) {
-    printf("%d: %s\n", i, hash_table[i]);
+  for (int i=0; i<*m_ptr; i++) {
+    if (hash_table[i]==NULL) {
+      printf("%d:\n", i);
+    }
+    else {
+       printf("%d: %s\n", i, hash_table[i]);
+    }
   }
 }
 
-// insert returns the size of hash table after this insertion 
-char** insert(char** hash_table, char* string, int hash_value, int m, int k) {
+// insert returns hash table after this insertion 
+char** insert(char** hash_table, char* string, int hash_value, int m, int k, int* m_ptr) {
   // NOTE there will never be case where initial hash value is out of range (because mod m)
   // case 1 - spot is free
   if (hash_table[hash_value] == NULL) {
@@ -150,32 +153,43 @@ char** insert(char** hash_table, char* string, int hash_value, int m, int k) {
   else {
     // traverse
     int initial_hash_value = hash_value;
+    
     while (hash_table[hash_value] != NULL) {
+      // printf("string %s with hash value %d\n", string, hash_value);
       hash_value += k;
-      if (hash_table[hash_value] == NULL) {
-        // if space found, insert string 
-        hash_table[hash_value] = string;
-      }
       if (hash_value > m) {
         // wrap around
       hash_value %= m;
       }
-      if (hash_value == initial_hash_value) {
-        // cycle, need to resize hashtable
-        hash_table = resize_hash_table(hash_table, m, k, string);
+      if (hash_table[hash_value] == NULL) {
+        // if space found, insert string 
+        hash_table[hash_value] = string;
         break;
+      }
+      else if (hash_value == initial_hash_value) {
+        // cycle, need to resize hashtable
+        // printf("string %s with hash value %d needs resize\n", string, hash_value);
+        hash_table = resize_hash_table(hash_table, m, k, string, m_ptr);
+        // printf("current string is %s with hash value %d and hash table size %d\n", string, hash_value, m);
+        break; // BREAK HERE IS NECESSARY, UNCOMMENT PRINT STATEMENT ABOVE TO SEE WHY 
       }
     }
   }
+  // printf("\n below printing from within insert()\n");
+  // for (int i=0; i<12; i++) {
+  //   printf("%d: %s\n", i, hash_table[i]);
+  // }
   return hash_table;
 }
 
 
-char** resize_hash_table(char** hash_table, int m, int k, char* string) {
+char** resize_hash_table(char** hash_table, int m, int k, char* string, int* m_ptr) {
+  // printf("string %s with hashtable size %d and stepsize %d\n", string, m, k);
   
   // make new hashtable of double the original size
-  char** new_hash_table = (char**)realloc(hash_table, 2*m*sizeof(char*));
+  char** new_hash_table = (char**)malloc(2*m*sizeof(*hash_table));
   assert(new_hash_table);
+  
   // make each pointer in new hashtable point to null
   for (int i=0; i<2*m; i++) {
     new_hash_table[i] = (char*)malloc(MAX_STRING_LENGTH*sizeof(char));
@@ -185,13 +199,15 @@ char** resize_hash_table(char** hash_table, int m, int k, char* string) {
   // traverse old hash table and rehash each string into new hashtable
   for (int i=0; i<m; i++) {
     if (hash_table[i] != NULL) {
-      insert(new_hash_table, hash_table[i], hash(hash_table[i], 2*m), 2*m, k);
+      *m_ptr = 2*m;
+      new_hash_table = insert(new_hash_table, hash_table[i], hash(hash_table[i], 2*m), 2*m, k, m_ptr);
     }
   }
   // re-insert current string
-  
-  insert(new_hash_table, string, hash(string, 2*m), 2*m, k);
-  return new_hash_table;
+  new_hash_table = insert(new_hash_table, string, hash(string, 2*m), 2*m, k, m_ptr);
+  free(hash_table);
+  hash_table = new_hash_table;
+  return hash_table;
 }
 
 
@@ -201,35 +217,3 @@ void free_hash_table(char** hash_table, int m) {
   }
   free(hash_table);
 }
-
-// // check if the strings are all stored
-  // for (int k=0; k<n; k++) {
-  //   printf("length of the following string is %ld\n", strlen(strings[k]));
-  //   printf("%s\n", strings[k]);
-  // }
-
-  //   printf("IM GONNA PRINT THE NEW REALLOC ARRAY CONTENT NOW TO SEE IF IT COPIED OVER FROM OLD ARRAY\n");
-  // for (int i=0; i<2*m; i++) {
-  //   printf("%s\n", new_hash_table[i]);
-  // }
-
-// int hash_table_full(char** hashtable, int m) {
-//   for (int i=0; i<m; i++) {
-//     if (hashtable[i] == NULL) {
-//       // there is space, return false
-//       return FALSE;
-//     }
-//   }
-//   // no space, return true
-//   return TRUE;
-// }
-
-  // else {
-  //       char** new_hash_table = resize_hash_table(hash_table, m, k);
-  //       // insert current string again (recalculate hash value)
-  //       insert(new_hash_table, string, hash(string, 2*m), 2*m, k);
-  //       hash_table = new_hash_table;
-  //       m = 2*m;
-  //     }
-  //   }
-  

@@ -43,7 +43,7 @@ int chr(char character);
 //   (M-2): str_q
 //   (M-1):
 void problem_1_b();
-char** insert(char** hash_table, char* string, int hash_value, int m, int k);
+char** insert(char** hash_table, char* string, int hash_value, int m, int k, int* m_ptr);
 void free_hash_table(char** hash_table, int m);
-char** resize_hash_table(char** hash_table, int m, int k, char* string);
+char** resize_hash_table(char** hash_table, int m, int k, char* string, int* m_ptr);
 #endif
