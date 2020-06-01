@@ -146,20 +146,85 @@ void problem_2_b() {
     insert_char(root, curr_string);
   }
   // 4. find and print prefix of length n and their respective frequency
-  find_prefix(root, prefix_len);
-}
-
-void find_prefix(Node* root, int prefix_len) {
-  int level = 0;
-  char* prefix = (char*)malloc((prefix_len+1)*sizeof(char));
-  if (prefix_len == 0) {
+  if (prefix_len <= 0) {
     return;
   }
-  while (level < prefix_len) {
-    
+  prefixList *prefix_list = new_prefix_list();
+  int initial_level = 1;
+  for (int i=0; i<ALPHABET_SIZE; i++) {
+    if (root->character[i] != NULL) {
+      recursive_find_prefix(root->character[i], prefix_len, initial_level, prefix_list);
+    }
   }
-  
 
+  // 5. print the prefix list as required
+  prefixListNode* curr_prefix_list_node = prefix_list->top;
+  for (int i=0; i<prefix_list->size; i++) {
+    printf("%s %d\n", curr_prefix_list_node->string, curr_prefix_list_node->frequency);
+    curr_prefix_list_node = curr_prefix_list_node->next;
+  }
+}
+
+
+// Recursive function to find prefix of size prefix_len
+void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list) {
+  // append current node value to prefix
+  Node* curr = node;
+  char* prefix = (char*)malloc((prefix_len+1)*sizeof(char));
+  strncat(prefix, &(curr->data), 1);
+  // if reached prefix_len then stop checking further
+  if (level == prefix_len) {
+    // add prefix to prefix list
+    int freq = curr->frequency;
+    add_prefix_to_list(prefix_list, prefix, freq);
+    return;
+  }
+  // if have not reached prefix_len, keep recursively traversing its children
+  else {
+    for (int i=0; i<ALPHABET_SIZE; i++) {
+      if (node->character[i] != NULL) {
+      recursive_find_prefix(node->character[i], prefix_len, level+1, prefix_list);
+      }
+    } 
+  }
+}
+
+
+// Return new node for prefix list
+prefixListNode *new_prefixList_node(char* string, int freq) {
+  prefixListNode *node = (prefixListNode*)malloc(sizeof(*node));
+  assert(node);
+  node->string = (char*)malloc(MAX_STRING_LEN*sizeof(char));
+  assert(node->string);
+  node->string = string;
+  node->frequency = freq;
+  node->next = NULL;
+  return node;
+}
+
+
+// Add an element to the bottom of a prefix list
+void add_prefix_to_list(prefixList* prefix_list, char* prefix, int freq) {
+  prefixListNode *new_prefix_node = new_prefixList_node(prefix, freq);
+
+  if (prefix_list->size > 0) {
+    prefix_list->bottom->next = new_prefix_node;
+  }
+  else {
+    prefix_list->top = new_prefix_node;
+  }
+  prefix_list->bottom = new_prefix_node;
+  prefix_list->size += 1;
+}
+
+// Return a new prefix lsit
+prefixList *new_prefix_list() {
+	prefixList *newPrefixList = (prefixList*)malloc(sizeof(prefixList*));
+	assert(newPrefixList);
+  newPrefixList->top = NULL;
+  newPrefixList->bottom = NULL;
+  newPrefixList->size=0;
+	return newPrefixList;
 }
 
 // Again using the trie data structure you implemented for Part (a) you will
@@ -206,5 +271,39 @@ void problem_2_c() {
     scanf("%s\n", curr_string);
     insert_char(root, curr_string);
   }
+  // 5. pass stub to an altered search function
+  search_prefix(root, stub);
   
+}
+
+void search_prefix(Node* root, char* stub) {
+  // return 0 (false) if trie is empty
+  if (root == NULL) {
+    return 0;
+  }
+  Node* curr = root;
+  while (*stub) {
+    // go to next node
+    curr = curr->character[*stub-'a'+1];
+    // if reached leaf node, this string is invalid
+    if (curr->data == END_CHAR) {
+      return 0;
+    }
+    // move to next character
+    stub++;
+  }
+  // we are at end of stub now, so add the rest of current node's children to a list and print out
+  preorder_prediction(curr);
+}
+
+void preorder_prediction(Node* root) {
+  // singly linked list to store print-outs
+  prefixList *newList = new_prefix_list();
+
+  if (root == NULL) {
+    printf("0");
+    return;
+  }
+
+  prefixListNode *newNode = new_prefixList_node();
 }
