@@ -3,11 +3,12 @@
  *
  * created for COMP20007 Design of Algorithms 2020
  * template by Tobias Edwards <tobias.edwards@unimelb.edu.au>
- * implementation by <Insert Name Here>
+ * implementation by Dian Lin
  */
 
 #ifndef TEXT_ANALYSIS_H
 #define TEXT_ANALYSIS_H
+
 
 // The Nodes which make up the doubly-linked list
 typedef struct node Node;
@@ -15,22 +16,16 @@ typedef struct node Node;
 struct node {
     char data;
     int frequency;
-    Node* firstChild;
-    Node* sibling;
+    int isLeaf;
+    Node* character[27];
 };
 
-
-// Build a character level trie for a given set of words.
-//
-// The input to your program is an integer N followed by N lines containing
-// words of length < 100 characters, containing only lowercase letters.
-//
-// Your program should built a character level trie where each node indicates
-// a single character. Branches should be ordered in alphabetic order.
-//
-// Your program must output the pre-order traversal of the characters in
-// the trie, on a single line.
 void problem_2_a();
+Node *new_node(char data);
+void insert_char(Node* root, char* string);
+int search(Node* root, char* string);
+void pre_order(Node* root);
+void increase_freq(Node* node);
 
 // Using the trie constructed in Part (a) this program should output all
 // prefixes of length K, in alphabetic order along with their frequencies
@@ -75,33 +70,5 @@ void problem_2_b();
 // If there are two strings with the same probability ties should be broken
 // alphabetically (with "a" coming before "aa").
 void problem_2_c();
-
-
-#include <stdbool.h>
-
-// DO NOT CHANGE THESE TYPE DEFINITIONS
-
-// The data type that our Deque will contain
-typedef int Data;
-
-// Our Deque is implemented using a doubly-linked list
-typedef struct deque Deque;
-
-// The Nodes which make up the doubly-linked list
-typedef struct node Node;
-
-struct deque {
-  Node *top;
-  Node *bottom;
-  int size;
-};
-
-struct node {
-  Node *next;
-  Node *prev;
-  Data data;
-};
-
-
 
 #endif

@@ -3,7 +3,7 @@
  *
  * created for COMP20007 Design of Algorithms 2020
  * template by Tobias Edwards <tobias.edwards@unimelb.edu.au>
- * implementation by <Insert Name Here>
+ * implementation by Dian Lin
  */
 
 #include "text_analysis.h"
@@ -11,11 +11,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#define START_CHAR "^"
-#define END_CHAR "$"
-#define END_OF_STRING "\0"
-#define MAX_STRING_LEN 99
-#define ALPHABET_SIZE 26
+#define START_CHAR '^'
+#define END_CHAR '$'
+#define END_OF_STRING '\0'
+#define MAX_STRING_LEN 100 // 99 letters + '\0'
+#define ALPHABET_SIZE 27 // 26 letters + $
 #define TRUE 1
 #define FALSE 0
 
@@ -25,69 +25,92 @@
 void problem_2_a() {
   // 1. create root node
   Node *root = new_node(START_CHAR);
-
   // 2. read in N value
   int n=0;
   scanf("%d", &n);
-
-  // 3. pass each string to insert function
+  // 3. pass each string to insert_char function
   for (int i=0; i<n; i++) {
     char* curr_string = (char*)malloc(MAX_STRING_LEN*sizeof(char));
     assert(curr_string);
     scanf("%s\n", curr_string);
-    insert(root, curr_string);
+    insert_char(root, curr_string);
   }
-  
   // 4. starting from root, do pre-order traversal and print each node data
   pre_order(root);
 }
 
-Node *new_node(Data data) {
-  Node *node = malloc(sizeof(*node));
+Node *new_node(char data) {
+  Node *node = (Node*)malloc(sizeof(*node));
   assert(node);
   node->data = data;
   node->frequency = 0;
-  node->firstChild = NULL;
-  node->sibling = NULL;
+  node->isLeaf = 0;
+  for (int i=0; i<ALPHABET_SIZE; i++) {
+    node->character[i] = NULL;
+  }
   return node;
 }
 
-// insert characters of this string into trie
-void insert(Node* root, char* string) {
-  // increase frequency of root
+// insert_char characters of this string into trie
+void insert_char(Node* root, char* string) {
+  // increase frequency of root everytime a string is insert_chared
   increase_freq(root);
   // iterate through each char of string
-  int i=0;
-  Node* head = root;
-  while (string[i] != END_OF_STRING) {
-    // place current character in a node
-    Node *curr_char = new_node(string[i]);
-    // if root has no children yet, insert this char as first child
-    if (head->firstChild == NULL) {
-      head->firstChild = curr_char;
+  Node* curr = root;
+  while (*string) {
+    if (curr->character[*string-'a'+1] == NULL) {
+      // create new node if this path does not exist yet
+      curr->character[*string -'a'+1] = new_node(*string);
     }
-    // go to next node and go to next char in string
-    head = head->firstChild;
-    i++;    
+    // go to next node
+    curr = curr->character[*string-'a'+1];
+    increase_freq(curr);
+    // move to next character
+    string++;
   }
-  // insert leaf node to indicate end of this string
-  Node *leaf = new_node(END_CHAR);
-  head->firstChild = leaf;
+  if (curr->character[0] == NULL) {
+    // insert leaf node and mark it as leaf
+    curr->character[0] = new_node(END_CHAR);
+    curr->character[0]->isLeaf = 1;
+  }
+  increase_freq(curr->character[0]);
 }
 
-// determine whether this prefix is in trie
-int search() {
-
-}
-
-// determine whether this node is the end of a string
-int is_leaf(Node node) {
-
+// iterative function to search for a string in Trie
+int search(Node* root, char* string) {
+  // return 0 (false) if trie is empty
+  if (root == NULL) {
+    return 0;
+  }
+  Node* curr = root;
+  while (*string) {
+    // go to next node
+    curr = curr->character[*string-'a'+1];
+    // if reached leaf node, this string is invalid
+    if (curr->data == END_CHAR) {
+      return 0;
+    }
+    // move to next character
+    string++;
+  }
+  // we are at end of string now, so if current node's next node is a $ then valid string
+  curr = curr->character[0];
+  return curr->isLeaf;
 }
 
 // print preorder traversal of tree
 void pre_order(Node* root) {
-
+  if (root == NULL) {
+    return;
+  }
+  printf("%c\n", root->data);
+  for (int i=0; i<ALPHABET_SIZE; i++) {
+    if (root->character[i] != NULL) {
+      pre_order(root->character[i]);
+    }
+  }
+  // free this node
+  free(root);
 }
 
 // increase frequency of a node
@@ -110,7 +133,33 @@ void increase_freq(Node* node) {
 //   ...
 //   ye 1
 void problem_2_b() {
-  // TODO: Implement Me!
+  // 1. create root node
+  Node *root = new_node(START_CHAR);
+  // 2. read in N and K value
+  int n=0, prefix_len=0;
+  scanf("%d %d", &n, &prefix_len);
+  // 3. pass each string to insert_char to build trie
+  for (int i=0; i<n; i++) {
+    char* curr_string = (char*)malloc(MAX_STRING_LEN*sizeof(char));
+    assert(curr_string);
+    scanf("%s\n", curr_string);
+    insert_char(root, curr_string);
+  }
+  // 4. find and print prefix of length n and their respective frequency
+  find_prefix(root, prefix_len);
+}
+
+void find_prefix(Node* root, int prefix_len) {
+  int level = 0;
+  char* prefix = (char*)malloc((prefix_len+1)*sizeof(char));
+  if (prefix_len == 0) {
+    return;
+  }
+  while (level < prefix_len) {
+    
+  }
+  
+
 }
 
 // Again using the trie data structure you implemented for Part (a) you will
@@ -141,5 +190,21 @@ void problem_2_b() {
 // If there are two strings with the same probability ties should be broken
 // alphabetically (with "a" coming before "aa").
 void problem_2_c() {
-  // TODO: Implement Me!
+  // 1. create root node
+  Node *root = new_node(START_CHAR);
+  // 2. read in N value
+  int n=0;
+  scanf("%d", &n);
+  // 3. read in the stub string
+  char* stub = (char*)malloc(MAX_STRING_LEN*sizeof(char));
+  assert(stub);
+  scanf("%s", stub);
+  // 4. pass each subsequent string to insert_char to build trie
+  for (int i=0; i<n; i++) {
+    char* curr_string = (char*)malloc(MAX_STRING_LEN*sizeof(char));
+    assert(curr_string);
+    scanf("%s\n", curr_string);
+    insert_char(root, curr_string);
+  }
+  
 }
