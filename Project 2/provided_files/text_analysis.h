@@ -9,6 +9,17 @@
 #ifndef TEXT_ANALYSIS_H
 #define TEXT_ANALYSIS_H
 
+// The Nodes which make up the doubly-linked list
+typedef struct node Node;
+
+struct node {
+    char data;
+    int frequency;
+    Node* firstChild;
+    Node* sibling;
+};
+
+
 // Build a character level trie for a given set of words.
 //
 // The input to your program is an integer N followed by N lines containing
@@ -64,5 +75,33 @@ void problem_2_b();
 // If there are two strings with the same probability ties should be broken
 // alphabetically (with "a" coming before "aa").
 void problem_2_c();
+
+
+#include <stdbool.h>
+
+// DO NOT CHANGE THESE TYPE DEFINITIONS
+
+// The data type that our Deque will contain
+typedef int Data;
+
+// Our Deque is implemented using a doubly-linked list
+typedef struct deque Deque;
+
+// The Nodes which make up the doubly-linked list
+typedef struct node Node;
+
+struct deque {
+  Node *top;
+  Node *bottom;
+  int size;
+};
+
+struct node {
+  Node *next;
+  Node *prev;
+  Data data;
+};
+
+
 
 #endif
