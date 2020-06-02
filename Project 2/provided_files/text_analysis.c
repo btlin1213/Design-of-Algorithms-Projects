@@ -158,53 +158,40 @@ void problem_2_b() {
   prefixList *prefix_list = new_prefix_list();
   char* new_prefix_string = (char*)malloc(prefix_len*sizeof(char));
   assert(new_prefix_string);
-  recursive_find_prefix(root, new_prefix_string, prefix_list, prefix_len);
+  int initial_level = -1;
+  int initial_index = 0;
+  recursive_find_prefix(root, initial_level, initial_index, prefix_len, new_prefix_string);
 
   // 5. print the prefix list as required
-  prefixListNode* curr_prefix_list_node = prefix_list->top;
-  for (int i=0; i<prefix_list->size; i++) {
-    printf("%s %d\n", curr_prefix_list_node->string, curr_prefix_list_node->frequency);
-    curr_prefix_list_node = curr_prefix_list_node->next;
-  }
+  // prefixListNode* curr_prefix_list_node = prefix_list->top;
+  // for (int i=0; i<prefix_list->size; i++) {
+  //   printf("%s %d\n", curr_prefix_list_node->string, curr_prefix_list_node->frequency);
+  //   curr_prefix_list_node = curr_prefix_list_node->next;
+  // }
 }
 
 
 // Recursive function to find prefix of size required_len (modified pre-order traversal)
 // first call is recursive_find_prefix(root)
-void recursive_find_prefix(Node* node, char* prefix_string, prefixList* prefix_list, int required_len) {
-  if (node == NULL) {
+void recursive_find_prefix(Node* node, int level, int index, int size, char* prefix_string) {
+  
+  // base case
+  if (level + 1 == size && index > 0) {
+    // get rid of possibility of adding $ to string
+    prefix_string[level] = node->data;
+    prefix_string[level+1] = END_OF_STRING;
+    printf("%s %d\n", prefix_string, node->frequency);
     return;
   }
 
-  // printf("processing node %c, prefix_string is currently %s, prefix list is currently:\n", node->data, prefix_string);
-
-  // if string is already required length before this node is added, then just add string to prefix list
-  if (strlen(prefix_string) == required_len) {
-    printf("adding %s to prefix list!\n", prefix_string);
-    prefix_string[strlen(prefix_string)] = END_OF_STRING;
-    add_prefix_to_list(prefix_list, prefix_string, node->prev->frequency);
-    // malloc a new prefix string, free the old one, make the old pointer point at new one
-    char* new_prefix_string = (char*)malloc(required_len*sizeof(char));
-    assert(new_prefix_string);
-    free(prefix_string);
-    prefix_string = new_prefix_string;
-  }
-
-  // if string is not long enough and the current node is $, then do nothing just return
-  else if (node->data == END_CHAR) {
-    // prefix_string should contain up to and including parent node of $
-    return;
-  }
-
-  // if string is not long enough and the current node is a letter, add current node to string
-  else if (node->data != START_CHAR) {
-    append_to_string(prefix_string, node->data);
-  }
-
-  for (int i=0; i<ALPHABET_SIZE; i++) {
-    if (node->character[i] != NULL) {
-      printf("current node is %c, the next node to process is %c, current prefix_string is %s\n", node->data, node->character[i]->data, prefix_string);
-      recursive_find_prefix(node->character[i], prefix_string, prefix_list, required_len);
+  // normal case
+  else {
+    for (int i=0; i<ALPHABET_SIZE; i++) {
+      if (node->character[i] != NULL) {
+        prefix_string[level+1] = node->character[i]->data;
+        // printf("node->character[i] is %c, level+1 is %d, i is %d, size is %d, prefix_string is %s\n", node->character[i]->data, level+1, i, size, prefix_string);
+        recursive_find_prefix(node->character[i], level+1, i, size, prefix_string);
+      }
     }
   }
 }
@@ -464,3 +451,39 @@ void problem_2_c() {
 //     }
 //   }
 // }
+
+
+
+// attempt 4
+
+
+  // if (node == NULL) {
+  //   return;
+  // }
+  // // printf("processing node %c, prefix_string is currently %s, prefix list is currently:\n", node->data, prefix_string);
+  // // if string is already required length before this node is added, then just add string to prefix list
+  // if (strlen(prefix_string) == required_len) {
+  //   printf("adding %s to prefix list!\n", prefix_string);
+  //   prefix_string[strlen(prefix_string)] = END_OF_STRING;
+  //   add_prefix_to_list(prefix_list, prefix_string, node->prev->frequency);
+  //   // malloc a new prefix string, free the old one, make the old pointer point at new one
+  //   char* new_prefix_string = (char*)malloc(required_len*sizeof(char));
+  //   assert(new_prefix_string);
+  //   free(prefix_string);
+  //   prefix_string = new_prefix_string;
+  // }
+  // // if string is not long enough and the current node is $, then do nothing just return
+  // else if (node->data == END_CHAR) {
+  //   // prefix_string should contain up to and including parent node of $
+  //   return;
+  // }
+  // // if string is not long enough and the current node is a letter, add current node to string
+  // else if (node->data != START_CHAR) {
+  //   append_to_string(prefix_string, node->data);
+  // }
+  // for (int i=0; i<ALPHABET_SIZE; i++) {
+  //   if (node->character[i] != NULL) {
+  //     printf("current node is %c, the next node to process is %c, current prefix_string is %s\n", node->data, node->character[i]->data, prefix_string);
+  //     recursive_find_prefix(node->character[i], prefix_string, prefix_list, required_len);
+  //   }
+  // }
