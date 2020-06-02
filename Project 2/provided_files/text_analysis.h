@@ -55,11 +55,13 @@ void increase_freq(Node* node);
 //   ...
 //   ye 1
 void problem_2_b();
-void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list);
+void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list, char* prefix);
 prefixListNode *new_prefixList_node(char* string, int freq);
 void add_prefix_to_list(prefixList* prefix_list, char* prefix, int freq);
 prefixList *new_prefix_list();
-
+void search_prefix(Node* root, char* stub);
+void print_prefix_list(prefixList *list);
+void append_to_string(char* string, char character);
 // Again using the trie data structure you implemented for Part (a) you will
 // provide a list (up to 5) of the most probable word completions for a given
 // word stub.
