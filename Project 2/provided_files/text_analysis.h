@@ -55,7 +55,7 @@ void increase_freq(Node* node);
 //   ...
 //   ye 1
 void problem_2_b();
-void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list, char* prefix);
+void recursive_find_prefix(Node* node, char* prefix_string, prefixList* prefix_list, int level, int required_len);
 prefixListNode *new_prefixList_node(char* string, int freq);
 void add_prefix_to_list(prefixList* prefix_list, char* prefix, int freq);
 prefixList *new_prefix_list();

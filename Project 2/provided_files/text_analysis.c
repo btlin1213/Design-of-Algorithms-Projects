@@ -18,6 +18,7 @@
 #define ALPHABET_SIZE 27 // 26 letters + $
 #define TRUE 1
 #define FALSE 0
+#define PLACE_FILLER 'f'
 
 // The input to your program is an integer N followed by N lines containing words of length < 100 characters, containing only lowercase letters.
 // Branches should be ordered in alphabetic order.
@@ -152,13 +153,9 @@ void problem_2_b() {
     return;
   }
   prefixList *prefix_list = new_prefix_list();
-  int initial_level = 1;
+  int initial_level = 0;
 
-  for (int i=0; i<ALPHABET_SIZE; i++) {
-    if (root->character[i] != NULL) {
-      
-      recursive_find_prefix(root->character[i], prefix_len, initial_level, prefix_list, NULL);
-    }
+  recursive_find_prefix(root, NULL, prefix_list, initial_level, prefix_len);
   }
 
   // // 5. print the prefix list as required
@@ -170,53 +167,64 @@ void problem_2_b() {
 }
 
 
-// Recursive function to find prefix of size prefix_len
-void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list, char* prefix) {
-  size_t unit = 1;
-  if (prefix == NULL) {
-    // malloc memory for a new string (starting to put together a new prefix)
-    char* prefix = malloc(unit*sizeof(char));
-    assert(prefix);
-  }
+// Recursive function to find prefix of size required_len (modified pre-order traversal)
+// first call is recursive_find_prefix(root)
+void recursive_find_prefix(Node* node, char* prefix_string, prefixList* prefix_list, int level, int required_len) {
 
-  // debug statements
-  printf("finding the children of %c on level %d\n", node->data, level);
-  printf("prefix list looks like: \n");
-  print_prefix_list(prefix_list);
-
-  // append current node value to prefix
-  Node* curr = node;
-  prefix = realloc(prefix, unit*sizeof(char));
-  assert(prefix);  
-  append_to_string(prefix, curr->data);
-
-  printf("prefix string is %s right now\n", prefix);
-  // printf("curr is pointing to %c\n", curr->data);
-  // printf("currently putting together prefix string %s, up to level %d\n", prefix, level);
-
-  // if reached prefix_len then stop checking further
-  if (level == prefix_len) {
-    // add prefix to prefix list
-    int freq = curr->frequency;
-    add_prefix_to_list(prefix_list, prefix, freq);
-    // delete last char from prefix string?
-    prefix = prefix
-    free(prefix);
+  // case 1: node is $
+  if (node->data == END_CHAR) {
+    // reach each end of a branch, check if level-1 = required_len
+    // if level-1 == required_len, add this prefix to prefix_list
+    if (level == required_len) {
+      // close off the string with '\0'
+      prefix_string[required_len+1] = END_OF_STRING;
+      add_prefix_to_list(prefix_string, prefix_list, );
+    }
+    // else level-1 < required_len, discard this prefix (prefix string should only contain node($)'s parent)
     return;
   }
-  // if have not reached prefix_len, keep recursively traversing its children
-  else {
+
+  // case 2: node is ^
+  else if (node->data = START_CHAR) {
+    // don't add ^ to prefix string, start from its children
     for (int i=0; i<ALPHABET_SIZE; i++) {
-      if (curr->character[i]->data == END_CHAR) {
-        continue;
+      if (node->character[i] != NULL && node->character[i]->data != END_CHAR) {
+        char* new_prefix_string = (char*)malloc((required_len+1)*sizeof(char));
+        assert(new_prefix_string);
+        recursive_find_prefix(node->character[i], new_prefix_string, prefix_list, level+1, required_len);
       }
-      else if (curr->character[i] != NULL) {
-        recursive_find_prefix(curr->character[i], prefix_len, level+1, prefix_list, prefix);
-        printf("when we are on node %c of level %d, the prefix string so far is %s\n", curr->data, level, prefix);
-      }
-    } 
+    }
   }
+
+  // case 3: node is a letter
+  else {
+    // add node->data to prefix string
+    append_to_string(prefix_string, node->data);
+
+    // add prefix to list
+    if (level == required_len) {
+      // close off the string with '\0'
+      prefix_string[required_len+1] = END_OF_STRING;
+      add_prefix_to_list(prefix_string, prefix_list, node->frequency);
+    }
+
+    // traverse its children
+    else {
+      for (int i=0; i<ALPHABET_SIZE; i++) {
+        if (node->character[i] != NULL) {
+          recursive_find_prefix(node->character[i]);
+        }
+      }
+    }
+  }
+
 }
+
+
+
+
+}
+
 
 void append_to_string(char* string, char character) {
   size_t length = strlen(string);
@@ -357,4 +365,56 @@ void problem_2_c() {
 //   }
 
 //   prefixListNode *newNode = new_prefixList_node();
+// }
+
+
+
+
+
+// recursive function for 2b attempt 1
+// void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list, char* prefix) {
+//   size_t unit = 1;
+//   if (prefix == NULL) {
+//     // malloc memory for a new string (starting to put together a new prefix)
+//     char* prefix = malloc(unit*sizeof(char));
+//     assert(prefix);
+//   }
+
+//   // debug statements
+//   printf("finding the children of %c on level %d\n", node->data, level);
+//   printf("prefix list looks like: \n");
+//   print_prefix_list(prefix_list);
+
+//   // append current node value to prefix
+//   Node* curr = node;
+//   prefix = realloc(prefix, unit*sizeof(char));
+//   assert(prefix);  
+//   append_to_string(prefix, curr->data);
+
+//   printf("prefix string is %s right now\n", prefix);
+//   // printf("curr is pointing to %c\n", curr->data);
+//   // printf("currently putting together prefix string %s, up to level %d\n", prefix, level);
+
+//   // if reached prefix_len then stop checking further
+//   if (level == prefix_len) {
+//     // add prefix to prefix list
+//     int freq = curr->frequency;
+//     add_prefix_to_list(prefix_list, prefix, freq);
+//     // delete last char from prefix string?
+  
+//     free(prefix);
+//     return;
+//   }
+//   // if have not reached prefix_len, keep recursively traversing its children
+//   else {
+//     for (int i=0; i<ALPHABET_SIZE; i++) {
+//       if (curr->character[i]->data == END_CHAR) {
+//         continue;
+//       }
+//       else if (curr->character[i] != NULL) {
+//         recursive_find_prefix(curr->character[i], prefix_len, level+1, prefix_list, prefix);
+//         printf("when we are on node %c of level %d, the prefix string so far is %s\n", curr->data, level, prefix);
+//       }
+//     } 
+//   }
 // }
