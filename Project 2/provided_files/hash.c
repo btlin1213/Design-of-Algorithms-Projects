@@ -33,11 +33,9 @@ void problem_1_a() {
   // 1. read in the N and M values
   int n = 0, m = 0;
   scanf("%d %d", &n, &m);
-  
   // 2. initialise an int array of size N
   int *hash_values = (int*)malloc(n*sizeof(int));
   assert(hash_values);
-
   // 3. read in strings and calculate their hash value and store in hash_values array
   for (int j=0; j<n; j++) {
     char* string = (char*)malloc(MAX_STRING_LENGTH*sizeof(char));
@@ -46,17 +44,21 @@ void problem_1_a() {
     int hash_value = hash(string, m);
     hash_values[j] = hash_value;
   }
-
-  // // 4. print the hash values to stdout
-  // for (int k=0; k<n; k++) {
-  //   printf("%d\n", hash_values[k]);
-  // }
+  // 4. print the hash values to stdout
+  for (int k=0; k<n; k++) {
+    printf("%d\n", hash_values[k]);
+  }
 }
 
 int hash(char* string, int m) {
-  // initial hash_value is chr(first_character)
-  int hash_value = chr(string[0]);
   int length = strlen(string);
+  if (length == 0) {
+    return 0;
+  }
+  else if (length == 1) {
+    return chr(string[0]) % m;
+  }
+  int hash_value = chr(string[0]);
   // calculate and accumulate hash value for each letter
   for (int i=1; i<length; i++) {
     char character = string[i];
@@ -85,29 +87,6 @@ int chr(char character) {
 }
 
 
-
-// Implements a solution to Problem 1 (b), which reads in from stdin:
-//   N M K
-//   str_1
-//   str_2
-//   ...
-//   str_N
-// Each string is inputed (in the given order) into a hash table with size
-// M. The collision resolution strategy must be linear probing with step
-// size K. If an element cannot be inserted then the table size should be
-// doubled and all elements should be re-hashed (in index order) before
-// the element is re-inserted.
-//
-// This function must output the state of the hash table after all insertions
-// are performed, in the following format
-//   0: str_k
-//   1:
-//   2: str_l
-//   3: str_p
-//   4:
-//   ...
-//   (M-2): str_q
-//   (M-1):
 void problem_1_b() {
   // 1. read in the N, M and K values
   int n = 0, m = 0, k = 0;
@@ -153,11 +132,9 @@ char** insert(char** hash_table, char* string, int hash_value, int m, int k, int
   else {
     // traverse
     int initial_hash_value = hash_value;
-    
     while (hash_table[hash_value] != NULL) {
-      // printf("string %s with hash value %d\n", string, hash_value);
       hash_value += k;
-      if (hash_value > m) {
+      if (hash_value >= m) {
         // wrap around
       hash_value %= m;
       }
@@ -168,28 +145,19 @@ char** insert(char** hash_table, char* string, int hash_value, int m, int k, int
       }
       else if (hash_value == initial_hash_value) {
         // cycle, need to resize hashtable
-        // printf("string %s with hash value %d needs resize\n", string, hash_value);
         hash_table = resize_hash_table(hash_table, m, k, string, m_ptr);
-        // printf("current string is %s with hash value %d and hash table size %d\n", string, hash_value, m);
-        break; // BREAK HERE IS NECESSARY, UNCOMMENT PRINT STATEMENT ABOVE TO SEE WHY 
+        break; // break to get rid of previous hash table size etc. 
       }
     }
   }
-  // printf("\n below printing from within insert()\n");
-  // for (int i=0; i<12; i++) {
-  //   printf("%d: %s\n", i, hash_table[i]);
-  // }
   return hash_table;
 }
 
 
 char** resize_hash_table(char** hash_table, int m, int k, char* string, int* m_ptr) {
-  // printf("string %s with hashtable size %d and stepsize %d\n", string, m, k);
-  
   // make new hashtable of double the original size
   char** new_hash_table = (char**)malloc(2*m*sizeof(*hash_table));
   assert(new_hash_table);
-  
   // make each pointer in new hashtable point to null
   for (int i=0; i<2*m; i++) {
     new_hash_table[i] = (char*)malloc(MAX_STRING_LENGTH*sizeof(char));
