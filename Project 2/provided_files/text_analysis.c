@@ -168,33 +168,6 @@ void recursive_find_prefix(Node* node, int level, int index, int required_len, c
 }
 
 
-// Again using the trie data structure you implemented for Part (a) you will
-// provide a list (up to 5) of the most probable word completions for a given
-// word stub.
-//
-// For example if the word stub is "al" your program may output:
-//   0.50 algorithm
-//   0.25 algebra
-//   0.13 alright
-//   0.06 albert
-//   0.03 albania
-//
-// The probabilities should be formatted to exactly 2 decimal places and
-// should be computed according to the following formula, for a word W with the
-// prefix S:
-//   Pr(word = W | stub = S) = Freq(word = W) / Freq(stub = S)
-//
-// The input to your program will be the following:
-//   n
-//   stub
-//   str_0
-//   ...
-//   str_(n-1)
-// That is, there are n + 1 strings in total, with the first being the word
-// stub.
-//
-// If there are two strings with the same probability ties should be broken
-// alphabetically (with "a" coming before "aa").
 void problem_2_c() {
   // 1. create root node
   Node *root = new_node(START_CHAR);
@@ -214,23 +187,20 @@ void problem_2_c() {
   }
   // 5. pass stub to an altered search function to find node of last letter
   Node* stub_leaf = stub_search(root, stub);
-  // 6. initialise priority queue (this node should always be last)
-  pqNode* pq = new_pq_node("place holder", 0);
+  // 6. initialise priority queue 
+  priorityQ* pq = new_priority_q();
   // 7. traverse its subtree
   int stub_freq = stub_leaf->frequency;
   char* string = (char*)malloc(MAX_STRING_LEN*sizeof(char));
   assert(string);
   int initial_level = -1;
   int initial_index = 0;
-  print_subtree(stub_leaf, stub_freq, initial_level, initial_index, string, stub, pq);
+  traverse_subtree(stub_leaf, stub_freq, initial_level, initial_index, string, stub, pq);
   // 8. print out priority queue
-  for (int i=0; i<MAX_AUTO_COMPLETE; i++) {
-    printf("%.2f %s%s", pq->priority, stub, pq->string);
-    pq = pq->next;
-  }
+  print_pq(pq, stub, MAX_AUTO_COMPLETE);
 }
 
-void print_subtree(Node* node, int stub_freq, int level, int index, char* string, char* stub, pqNode* head) {
+void traverse_subtree(Node* node, int stub_freq, int level, int index, char* string, char* stub, priorityQ* pq) {
   for (int i=0; i<ALPHABET_SIZE; i++) {
     if (node->character[i] != NULL) {
       if (node->character[i]->data == END_CHAR) {
@@ -239,14 +209,11 @@ void print_subtree(Node* node, int stub_freq, int level, int index, char* string
         string[level+1] = END_OF_STRING;
         int freq_w = node->character[i]->frequency;
         float probability = (float)freq_w/stub_freq;
-        // INSTEAD OF PRINTING, ADD RESULTS TO PRIORITY QUEUE AND PRINT TOP 5 (from 2c function?)
-        // printf("%.2f %s%s\n", probability, stub, string);
-        push_pq(&head, string, probability);
-        printf("head is %s with priority %.2f\n", head->string, head->priority);
+        push_pq(pq, string, probability);
       }
       else {
         string[level+1] = node->character[i]->data; // add non-null child to string
-        print_subtree(node->character[i], stub_freq, level+1, i, string, stub, head);
+        traverse_subtree(node->character[i], stub_freq, level+1, i, string, stub, pq);
       }
     }
   }
@@ -269,229 +236,121 @@ Node* stub_search(Node* root, char* string) {
     // move to next character
     string++;
   }
-  // // we are at end of string now, so if current node's next node is a $ then valid string
-  // curr = curr->character[0];
-  // return curr->isLeaf;
+  // curr is last char in string
   return curr;
 }
 
+priorityQ *new_priority_q() {
+  priorityQ *pq = malloc(sizeof(*pq));
+  assert(pq);
+  pq->top = NULL;
+  pq->size = 0;
+  return pq;
+}
 
 pqNode* new_pq_node(char* string, float probability) {
-  pqNode* temp = (pqNode*)malloc(sizeof(pqNode));
-  temp->string = string;
+  pqNode* temp = malloc(sizeof(pqNode));
+  temp->string = strdup(string);
   temp->priority = probability;
   temp->next = NULL;
   return temp;
 }
 
-// void pop_pq(pqNode** head) {
-//   pqNode* temp = *head;
-//   *head = (*head)->next;
-//   free(temp);
-// }
+void push_pq(priorityQ* pq, char* string, float probability) {
+  pqNode* new = new_pq_node(string, probability);
+  pqNode* curr = pq->top;
 
-void push_pq(pqNode** head, char* string, float probability) {
 
-  pqNode* start = *head;
-  pqNode* temp = new_pq_node(string, probability);
-
-  // case 1: head of list has lower priority than new node
-  // insert new node before head and change head
-  if ((*head)->priority < probability) {
-    temp->next = *head;
-    *head = temp;
+  // case 1: list is empty
+  if (pq_is_empty(pq)) {
+    printf("before inserting string %s\n", new->string);
+    print_pq(pq, "alg", 5);
+    pq->top = new;
+    pq->size += 1;
   }
-  // case 2: head of list has higher priority than new node
+  
+  // case 2: head of list has lower priority than new node
+  // insert new node before head and change head
+  else if (priority_cmp(curr, new)) {
+    
+    pq->top = new;
+    pq->top->next = curr;
+    pq->size += 1;
+  }
+  
+  // case 3: head of list has higher priority than new node
   // insert new node in appropriate position
   else {
-    while (start->next != NULL && start->next->priority > probability) {
-      start = start->next;
+    
+    
+    while (curr->next != NULL && priority_cmp(new, curr->next)) {
+      curr = curr->next;
     }
-    temp->next = start->next;
-    start->next = temp;
+    // while loop finish either curr is end of list or curr's next element has smaller probability than new
+    // insert new after curr
+    new->next = curr->next;
+    curr->next = new;
+    pq->size += 1;   
   }
 }
 
-int pq_is_empty(pqNode** head) {
-  return *head == NULL;
+void print_pq(priorityQ* pq, char* stub, int k) {
+  pqNode* curr = pq->top; 
+  for (int i=0; i<k; i++) {
+    if (curr) {
+      printf("%.2f %s%s\n", curr->priority, stub, curr->string);
+    }
+    else {
+      return;
+    }
+    // if there is no more nodes (less than 5 available, just break)
+    if (curr->next == NULL) {
+      return;
+    }
+    curr = curr->next;
+  }
+}
+
+int pq_is_empty(priorityQ* pq) {
+  return pq->top == NULL;
+}
+
+int priority_cmp(pqNode* a, pqNode* b) {
+  // compare their probability
+  if (a->priority < b->priority) {
+    return TRUE;
+  }
+  else if (a->priority > b->priority) {
+    return FALSE;
+  }
+  else {
+    // equal probability, compare their string 
+    // \0 > a > aa
+    char* a_string = a->string;
+    char* b_string = b->string;
+    
+    while (*a_string != END_OF_STRING && *b_string != END_OF_STRING) {
+      if (*a_string > *b_string) {
+        return TRUE;
+      }
+      else if (*a_string < *b_string) {
+        return FALSE;
+      }
+      // move to next character
+      a_string++;
+      b_string++;
+    }
+    // if a_string finished earlier than b_string, then a is larger
+    if (!*a_string) {
+      
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
 }
 
 
 
-// void preorder_prediction(Node* root) {
-//   // singly linked list to store print-outs
-//   prefixList *newList = new_prefix_list();
 
-//   if (root == NULL) {
-//     printf("0");
-//     return;
-//   }
-
-//   prefixListNode *newNode = new_prefixList_node();
-// }
-
-// SUBFUNCTION FOR 2C ATTEMPT 1
-// // return 0 (false) if trie is empty
-//   if (root == NULL) {
-//     return 0;
-//   }
-//   Node* curr = root;
-//   while (*stub) {
-//     // go to next node
-//     curr = curr->character[*stub-'a'+1];
-//     // if reached leaf node, this string is invalid
-//     if (curr->data == END_CHAR) {
-//       return 0;
-//     }
-//     // move to next character
-//     stub++;
-//   }
-//   // we are at end of stub now, so add the rest of current node's children to a list and print out
-//   preorder_prediction(curr);
-
-
-
-
-// recursive function for 2b attempt 1
-// void recursive_find_prefix(Node* node, int prefix_len, int level, prefixList* prefix_list, char* prefix) {
-//   size_t unit = 1;
-//   if (prefix == NULL) {
-//     // malloc memory for a new string (starting to put together a new prefix)
-//     char* prefix = malloc(unit*sizeof(char));
-//     assert(prefix);
-//   }
-
-//   // debug statements
-//   printf("finding the children of %c on level %d\n", node->data, level);
-//   printf("prefix list looks like: \n");
-//   print_prefix_list(prefix_list);
-
-//   // append current node value to prefix
-//   Node* curr = node;
-//   prefix = realloc(prefix, unit*sizeof(char));
-//   assert(prefix);  
-//   append_to_string(prefix, curr->data);
-
-//   printf("prefix string is %s right now\n", prefix);
-//   // printf("curr is pointing to %c\n", curr->data);
-//   // printf("currently putting together prefix string %s, up to level %d\n", prefix, level);
-
-//   // if reached prefix_len then stop checking further
-//   if (level == prefix_len) {
-//     // add prefix to prefix list
-//     int freq = curr->frequency;
-//     add_prefix_to_list(prefix_list, prefix, freq);
-//     // delete last char from prefix string?
-  
-//     free(prefix);
-//     return;
-//   }
-//   // if have not reached prefix_len, keep recursively traversing its children
-//   else {
-//     for (int i=0; i<ALPHABET_SIZE; i++) {
-//       if (curr->character[i]->data == END_CHAR) {
-//         continue;
-//       }
-//       else if (curr->character[i] != NULL) {
-//         recursive_find_prefix(curr->character[i], prefix_len, level+1, prefix_list, prefix);
-//         printf("when we are on node %c of level %d, the prefix string so far is %s\n", curr->data, level, prefix);
-//       }
-//     } 
-//   }
-// }
-
-// // case 1: node is $
-  // if (node->data == END_CHAR) {
-  //   // reach each end of a branch, check if level-1 = required_len
-  //   // if level-1 == required_len, add this prefix to prefix_list
-  //   if (level == required_len) {
-  //     // close off the string with '\0'
-  //     prefix_string[required_len+1] = END_OF_STRING;
-  //     add_prefix_to_list(prefix_string, prefix_list, );
-  //   }
-  //   // else level-1 < required_len, discard this prefix (prefix string should only contain node($)'s parent)
-  //   return;
-  // }
-
-
-
-  // 2b attempt 2
-//   void recursive_find_prefix(Node* node, char* prefix_string, prefixList* prefix_list, int level, int required_len) {
-
-//   // case 1: node is ^
-//   if (node->data == START_CHAR) {
-//     // don't add ^ to prefix string, start from its children
-//     for (int i=0; i<ALPHABET_SIZE; i++) {
-//       if (node->character[i] != NULL && node->character[i]->data != END_CHAR) {
-//         char* new_prefix_string = (char*)malloc((required_len+1)*sizeof(char));
-//         assert(new_prefix_string);
-//         recursive_find_prefix(node->character[i], new_prefix_string, prefix_list, level+1, required_len);
-//       }
-//     }
-//   }
-
-//   // case 2: node is a letter
-//   else {
-//     // add node->data to prefix string
-//     printf("processing node %c on level %d\n", node->data, level);
-//     append_to_string(prefix_string, node->data);
-//     printf("processing prefix string %s\n", prefix_string);
-//     // add prefix to list
-//     if (level == required_len) {
-//       // close off the string with '\0'
-//       printf("prefix string %s is long enough now\n", prefix_string);
-//       prefix_string[required_len+1] = END_OF_STRING;
-//       add_prefix_to_list(prefix_list, prefix_string, node->frequency);
-//       printf("prefix list:\n");
-//       print_prefix_list(prefix_list);
-//       prefix_string = prefix_string[:-1];
-//     }
-//     // traverse its children
-//     else {
-//       for (int i=0; i<ALPHABET_SIZE; i++) {
-//         if (node->character[i]->data == END_CHAR) {
-//           continue;
-//         }
-//         if (node->character[i] != NULL) {
-//           recursive_find_prefix(node->character[i], prefix_string, prefix_list, level+1, required_len);
-//         }
-//       }
-//     }
-//   }
-// }
-
-
-
-// attempt 4
-
-
-  // if (node == NULL) {
-  //   return;
-  // }
-  // // printf("processing node %c, prefix_string is currently %s, prefix list is currently:\n", node->data, prefix_string);
-  // // if string is already required length before this node is added, then just add string to prefix list
-  // if (strlen(prefix_string) == required_len) {
-  //   printf("adding %s to prefix list!\n", prefix_string);
-  //   prefix_string[strlen(prefix_string)] = END_OF_STRING;
-  //   add_prefix_to_list(prefix_list, prefix_string, node->prev->frequency);
-  //   // malloc a new prefix string, free the old one, make the old pointer point at new one
-  //   char* new_prefix_string = (char*)malloc(required_len*sizeof(char));
-  //   assert(new_prefix_string);
-  //   free(prefix_string);
-  //   prefix_string = new_prefix_string;
-  // }
-  // // if string is not long enough and the current node is $, then do nothing just return
-  // else if (node->data == END_CHAR) {
-  //   // prefix_string should contain up to and including parent node of $
-  //   return;
-  // }
-  // // if string is not long enough and the current node is a letter, add current node to string
-  // else if (node->data != START_CHAR) {
-  //   append_to_string(prefix_string, node->data);
-  // }
-  // for (int i=0; i<ALPHABET_SIZE; i++) {
-  //   if (node->character[i] != NULL) {
-  //     printf("current node is %c, the next node to process is %c, current prefix_string is %s\n", node->data, node->character[i]->data, prefix_string);
-  //     recursive_find_prefix(node->character[i], prefix_string, prefix_list, required_len);
-  //   }
-  // }
