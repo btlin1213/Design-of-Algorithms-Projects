@@ -8,7 +8,14 @@
 
 #ifndef TEXT_ANALYSIS_H
 #define TEXT_ANALYSIS_H
-
+#define START_CHAR '^'
+#define END_CHAR '$'
+#define END_OF_STRING '\0'
+#define MAX_STRING_LEN 100 // 99 letters + '\0'
+#define ALPHABET_SIZE 27 // 26 letters + $
+#define TRUE 1
+#define FALSE 0
+#define MAX_AUTO_COMPLETE 5
 
 // The Nodes which make up the doubly-linked list for trie 
 typedef struct node Node;
@@ -17,7 +24,7 @@ struct node {
     char data;
     int frequency;
     int isLeaf;
-    Node* character[27];
+    Node* character[ALPHABET_SIZE];
     Node* prev;
 };
 
@@ -46,7 +53,7 @@ void increase_freq(Node* node);
 
 
 void problem_2_b();
-void recursive_find_prefix(Node* node, int level, int index, int required_len, char* prefix);
+void recursive_find_prefix(Node* node, char* prefix_string, int level, int index, int required_len);
 
 
 void problem_2_c();

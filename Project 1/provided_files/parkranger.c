@@ -110,12 +110,14 @@ Graph *create_graph(int total_v) {
   for (i=0; i<(total_v); i++) {
     graph->array[i] = *new_deque();
   }
+
   return graph;
 }
 
 // function to add an edge to given graph
 void add_edge(Graph* graph, int from, int to) {
   deque_insert(&graph->array[from], to);
+
 }
 
 // starter function for topological sort 
@@ -137,6 +139,7 @@ Deque* top_sort(Graph* graph, int total_v) {
   int j=0;
   for (j=0; j<(total_v); j++) {
     if (visited[j] == 0) {
+      
       top_sort_recursive(j, stack, visited, graph);
     }
   }
@@ -147,7 +150,7 @@ Deque* top_sort(Graph* graph, int total_v) {
 void top_sort_recursive(int node_id, Deque* stack, int* visited, Graph* graph) {
   // mark current node as visited
   visited[node_id] = 1;
-
+  /* INFINITE LOOP IN RECURSIVE FUNCTION */
   // case 1: empty adjacency list (no adjacent nodes)
   if (graph->array[node_id].top == NULL) {
     // push it to the stack
